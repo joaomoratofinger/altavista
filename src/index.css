@@ -1,0 +1,64 @@
+@import 'tailwindcss';
+
+@theme {
+  --font-serif: 'Cormorant Garamond', Georgia, 'Times New Roman', serif;
+  --font-sans: 'Jost', ui-sans-serif, system-ui, sans-serif;
+
+  --color-ink: #1b1712;
+  --color-paper: #faf7f2;
+  --color-paper-soft: #f1ebe0;
+  --color-card: #ece3d3;
+  --color-line: #e2d8c6;
+  --color-bone: #f8f4ea;
+  --color-mute: #7d7266;
+  --color-gold: #9c7a3f;
+  --color-gold-soft: #7a5f30;
+}
+
+:root {
+  color-scheme: light;
+}
+
+html {
+  scroll-behavior: smooth;
+}
+
+body {
+  margin: 0;
+  background: var(--color-paper);
+  color: var(--color-ink);
+  font-family: var(--font-sans);
+  font-weight: 300;
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+img {
+  max-width: 100%;
+  display: block;
+}
+
+/* Componentes na layer do Tailwind para que utilitários `text-*` sobreponham. */
+@layer components {
+  /* small-caps tracked label used across the site */
+  .eyebrow {
+    font-family: var(--font-sans);
+    font-weight: 400;
+    text-transform: uppercase;
+    letter-spacing: 0.28em;
+    font-size: 0.68rem;
+    color: var(--color-mute);
+  }
+
+  .display {
+    font-family: var(--font-serif);
+    font-weight: 300;
+    line-height: 1.04;
+    letter-spacing: -0.01em;
+  }
+}
+
+::selection {
+  background: var(--color-gold);
+  color: var(--color-paper);
+}
