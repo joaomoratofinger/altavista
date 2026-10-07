@@ -1,19 +1,11 @@
-/** Configuração de contato exibida no site. Ajuste conforme os dados reais. */
+/** Configuração de marca e contato. Ajuste conforme os dados reais. */
 export const SITE = {
-  name: 'Elizeu Almeida',
-  tagline: 'Advisory for Iconic Assets',
-  /** Telefone só com dígitos e DDI, para o link do WhatsApp */
+  name: 'Altavista Residences',
+  tagline: 'Acervo off market',
+  /** Telefone só com dígitos e DDI, para o link do WhatsApp (PLACEHOLDER) */
   whatsapp: '5515999999999',
-  whatsappMessage: 'Olá, vim pelo site e gostaria de conversar sobre o portfólio.',
-  email: 'contato@elizeualmeida.com.br',
-  instagram: 'https://www.instagram.com/elizeualmeida.co/',
-  regionsLine: 'Porto Feliz · São Paulo · Portugal',
-  /**
-   * Retrato do corretor para a seção "Sobre".
-   * Deixe como string vazia para exibir o placeholder até receber a foto.
-   * Ao ter a imagem: coloque em `public/elizeu.jpg` e troque para '/elizeu.jpg'.
-   */
-  portrait: '/apartamento-home.jpg',
+  whatsappMessage: 'Olá, vim pelo site e gostaria de falar com a equipe.',
+  email: 'contato@altavistaresidences.com.br',
 } as const
 
 export function whatsappLink(message: string = SITE.whatsappMessage): string {

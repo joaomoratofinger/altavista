@@ -1,20 +1,18 @@
 import { useEffect, useState } from 'react'
-import { NavLink, useLocation } from 'react-router-dom'
+import { Link, NavLink, useLocation } from 'react-router-dom'
 import { Menu, X } from 'lucide-react'
 import Logo from './Logo'
-import { SITE, whatsappLink } from '../config'
-
-const NAV = [
-  { to: '/', label: 'Início', end: true },
-  { to: '/portfolio', label: 'Portfólio', end: false },
-  { to: '/off-market', label: 'Off Market', end: false },
-]
+import { useAsync } from '../lib/useAsync'
+import { isConfigured } from '../lib/supabase'
+import { listRegions } from '../data/site'
 
 export default function Header() {
   const { pathname } = useLocation()
   const hasHero = pathname === '/'
   const [scrolled, setScrolled] = useState(!hasHero)
   const [open, setOpen] = useState(false)
+  // As abas vêm do banco: nova região no painel aparece aqui sem deploy.
+  const { data: regions } = useAsync(() => (isConfigured ? listRegions() : Promise.resolve([])), [])
 
   useEffect(() => {
     if (!hasHero) {
@@ -35,48 +33,48 @@ export default function Header() {
   }, [open])
 
   const solid = scrolled || open
+  const items = (regions ?? []).map((r) => ({ to: `/regiao/${r.slug}`, label: r.name }))
 
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-colors duration-500 ${
-        solid
-          ? 'bg-paper/95 backdrop-blur border-b border-line'
-          : 'bg-gradient-to-b from-ink/55 to-transparent'
+        solid ? 'border-b border-line bg-paper/95 backdrop-blur' : 'bg-gradient-to-b from-ink/55 to-transparent'
       }`}
     >
-      <div className="mx-auto flex max-w-7xl items-center justify-between px-5 py-5 sm:px-8">
+      <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-5 py-5 sm:px-8">
         <Logo theme={solid ? 'ink' : 'bone'} />
 
-        <nav className="hidden items-center gap-9 md:flex">
-          {NAV.map((item) => (
+        <nav className="hidden items-center gap-8 lg:flex">
+          {items.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
-              end={item.end}
               className={({ isActive }) =>
                 `eyebrow transition-colors hover:text-gold ${
-                  solid
-                    ? isActive ? 'text-ink' : 'text-ink/70'
-                    : isActive ? 'text-bone' : 'text-bone/80'
+                  solid ? (isActive ? 'text-ink' : 'text-ink/70') : isActive ? 'text-bone' : 'text-bone/80'
                 }`
               }
             >
               {item.label}
             </NavLink>
           ))}
-          <a
-            href={whatsappLink()}
-            target="_blank"
-            rel="noreferrer"
+          <Link
+            to="/comprador"
             className="eyebrow border border-gold-soft/60 px-5 py-2.5 text-gold transition-colors hover:bg-gold hover:text-paper"
           >
-            WhatsApp
-          </a>
+            Quero comprar
+          </Link>
+          <Link
+            to="/proprietario"
+            className="eyebrow bg-gold px-5 py-2.5 text-ink transition-colors hover:bg-gold-soft hover:text-bone"
+          >
+            Sou proprietário
+          </Link>
         </nav>
 
         <button
           type="button"
-          className={`md:hidden transition-colors ${solid ? 'text-ink' : 'text-bone'}`}
+          className={`lg:hidden transition-colors ${solid ? 'text-ink' : 'text-bone'}`}
           onClick={() => setOpen((v) => !v)}
           aria-label={open ? 'Fechar menu' : 'Abrir menu'}
           aria-expanded={open}
@@ -86,31 +84,33 @@ export default function Header() {
       </div>
 
       {open && (
-        <nav className="border-t border-line bg-paper px-5 pb-10 pt-4 md:hidden">
-          {NAV.map((item) => (
+        <nav className="max-h-[calc(100vh-5rem)] overflow-y-auto border-t border-line bg-paper px-5 pb-10 pt-4 lg:hidden">
+          {items.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
-              end={item.end}
               onClick={() => setOpen(false)}
               className={({ isActive }) =>
-                `block border-b border-line py-4 text-lg display ${
-                  isActive ? 'text-gold' : 'text-ink'
-                }`
+                `display block border-b border-line py-4 text-lg ${isActive ? 'text-gold' : 'text-ink'}`
               }
             >
               {item.label}
             </NavLink>
           ))}
-          <a
-            href={whatsappLink()}
-            target="_blank"
-            rel="noreferrer"
-            className="mt-6 block border border-gold-soft/60 py-3 text-center text-gold eyebrow"
+          <Link
+            to="/proprietario"
+            onClick={() => setOpen(false)}
+            className="eyebrow mt-6 block bg-gold py-3.5 text-center text-ink"
           >
-            Falar no WhatsApp
-          </a>
-          <p className="eyebrow mt-6 text-mute">{SITE.regionsLine}</p>
+            Sou proprietário
+          </Link>
+          <Link
+            to="/comprador"
+            onClick={() => setOpen(false)}
+            className="eyebrow mt-3 block border border-gold-soft/60 py-3.5 text-center text-gold"
+          >
+            Quero comprar
+          </Link>
         </nav>
       )}
     </header>

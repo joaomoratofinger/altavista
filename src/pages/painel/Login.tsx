@@ -2,7 +2,7 @@ import { useState, type FormEvent } from 'react'
 import { Link } from 'react-router-dom'
 import { authErrorMessage, useAuth } from '../../lib/auth'
 import Logo from '../../components/Logo'
-import { Field, inputClass, Notice, primaryButton } from './ui'
+import { Field, inputClass, Notice, primaryButton } from '../../components/ui'
 
 export default function Login() {
   const { signIn, resetPassword } = useAuth()

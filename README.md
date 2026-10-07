@@ -1,83 +1,87 @@
-# Elizeu Almeida — site + área restrita
+# Altavista Residences — plataforma Acervo Off Market
 
-Site institucional da imobiliária de luxo Elizeu Almeida e o painel (`/painel`)
-para cadastro de imóveis.
+Site institucional + cadastros de proprietários e compradores + painel interno
+da equipe. **Nada do acervo é público**: o site mostra a marca e as regiões;
+imóveis só são vistos pela equipe (e, nas próximas etapas, entregues a
+compradores aprovados pelo WhatsApp).
+
+> O site anterior (Elizeu Almeida, portfólio público + Firebase) está guardado
+> na tag git `site-elizeu-v1`.
 
 ## Stack
 
-- Vite + React 19 + TypeScript
-- Tailwind CSS v4
-- React Router 7
-- Firebase: Hosting, Auth (e-mail + senha), Firestore e Storage
+- Vite + React 19 + TypeScript, Tailwind CSS v4, React Router 7
+- Supabase: Postgres (RLS), Auth (e-mail + senha), Storage
 
 ## Rodar
 
 ```bash
 npm install
+cp .env.example .env   # preencha URL e anon key do Supabase
 npm run dev
 ```
 
-Sem o `.env` preenchido o site roda com dados de exemplo e `/painel` mostra um
-aviso de configuração.
+Sem `.env`, o site abre mas formulários e painel avisam que falta configurar.
 
-## Configurar o Firebase (uma vez)
+## Configurar o Supabase (uma vez por ambiente)
 
-1. No [Console do Firebase](https://console.firebase.google.com), crie um projeto
-   e um **app da Web**; copie a config para `.env` (modelo em `.env.example`).
-2. Ative **Authentication → Método de login → E-mail/senha**.
-3. Crie o banco em **Firestore Database** e ative o **Storage**.
-4. Crie o usuário do painel em **Authentication → Usuários → Adicionar usuário**
-   e copie o **UID** dele.
-5. No Firestore, crie a coleção **`admins`** com um documento cujo **ID é o UID**
-   do passo 4 (pode ter um campo qualquer, ex.: `ativo: true`). Só quem tem esse
-   documento acessa o painel e os dados privados — mesmo que alguém consiga criar
-   conta, as regras bloqueiam.
-6. Publique as regras e o site:
+Use um projeto para **homologação** e outro para **produção**.
 
-   ```bash
-   npx firebase login
-   npx firebase use --add
-   npx firebase deploy --only firestore:rules,storage
-   npm run deploy
+1. Crie o projeto em supabase.com e copie *Project URL* e *anon key*
+   (Project Settings → API) para o `.env`.
+2. No **SQL Editor**, rode em ordem `supabase/migrations/0001_schema.sql` e
+   `0002_security_and_functions.sql`. Eles criam tabelas, permissões (RLS),
+   funções, buckets e os dados iniciais (4 regiões e termos provisórios).
+3. Em **Authentication → Users**, crie o primeiro usuário da equipe e rode:
+   ```sql
+   insert into profiles (id, name, role) values ('<uuid do usuário>', 'Nome', 'admin');
    ```
+   Perfis: `admin` (tudo) e `corretor` (vê e modera imóveis e compradores).
+4. Em **Authentication → URL Configuration**, ponha a URL do site (para o link de
+   redefinição de senha).
+5. Ative os backups automáticos (Database → Backups; backup contínuo (PITR) exige plano pago).
 
 ## Estrutura
 
 ```
-src/
-  config.ts                contato, WhatsApp, textos globais do site
-  types/property.ts        modelo do imóvel — separa campos PÚBLICOS de PRIVADOS
-  data/properties.ts       leitura PÚBLICA (site): Firestore, ou mock sem .env
-  data/adminProperties.ts  leitura/escrita do PAINEL (rascunhos, dados privados, fotos)
-  lib/firebase.ts          inicialização (lê as VITE_FIREBASE_* do .env)
-  lib/auth.tsx             AuthProvider: login, logout, checagem de admin
-  components/              Header, Footer, PropertyCard, Layout, etc.
-  pages/                   Home, Portfolio, OffMarket, PropertyDetail
-  pages/painel/            PainelLayout (guarda), Login, PropertyList, PropertyForm
-firestore.rules            regras do Firestore
-storage.rules              regras do Storage
+supabase/migrations/   esquema, regras de acesso e funções
+src/config.ts          nome, contato e WhatsApp do site
+src/data/site.ts       acesso PÚBLICO: regiões, termos, cadastros
+src/data/admin.ts      acesso do PAINEL (só funciona logado como equipe)
+src/lib/auth.tsx       login e perfil (admin/corretor)
+src/pages/             home, aba de região, formulários, obrigado
+src/pages/painel/      resumo, imóveis, compradores, regiões, termos, log
 ```
 
-## Dados públicos x privados
+## Como o sigilo funciona
 
-| Dado | Onde fica | Quem lê |
-|---|---|---|
-| Campos públicos | `properties/{id}` | visitantes (só se `published == true`); admin vê tudo |
-| Dados do proprietário | `properties/{id}/private/owner` | apenas admin logado |
-| Fotos | Storage `properties/{id}/…` | públicas; só admin envia/apaga |
-| Admins | `admins/{uid}` | criado só pelo Console |
+| Dado | Quem lê |
+|---|---|
+| Regiões ativas, termos ativos, contagem pública | qualquer visitante |
+| Imóveis, proprietários, compradores, conversas | só equipe ativa (`profiles`) |
+| Fotos (bucket privado `property-media`) | só equipe, por link temporário de 1 h |
+| Log de acessos, regiões/termos (edição), exclusão (LGPD) | só administrador |
 
-O site nunca lê a subcoleção `private`; as regras do Firestore também a
-bloqueiam para qualquer um que não seja admin.
+Visitantes **não** conseguem ler nem listar nada: os cadastros entram pelas
+funções `submit_owner` e `submit_buyer`, que validam tudo no servidor (CPF
+incluído) e respondem igual exista ou não o CPF. As fotos são enviadas para
+`incoming/…`, pasta onde o visitante só consegue gravar.
 
-## Painel
+## Status das etapas do briefing
 
-- `/painel` — lista de imóveis (publicados e rascunhos), editar e excluir.
-- `/painel/novo` e `/painel/:id` — formulário com dados do site, fotos (envio,
-  redução automática, ordem e capa), publicação e dados privados do proprietário.
+| Etapa | Situação |
+|---|---|
+| 3. Banco e painel | **Código pronto, não testado em Supabase real** |
+| 4. Site e abas por região | **Código pronto, não testado** |
+| 5. Cadastros (proprietário e comprador) | **Código pronto, não testado** |
+| 6. WhatsApp (API oficial) | Pendente — precisa de conta/provedor |
+| 7. Agente de IA | Pendente — precisa do modelo e do WhatsApp |
+| 8. Segurança | Parcial: bucket privado, link temporário, log, exclusão LGPD. Falta marca d'água, rotina de limpeza de uploads órfãos e CAPTCHA nos formulários |
+| 9. Lançamento | Pendente |
 
-## Ajustes pendentes de conteúdo real
+## Pendências conhecidas
 
-- `src/config.ts`: telefone do WhatsApp, e-mail, Instagram.
-- Cadastrar os imóveis reais e fotos definitivas pelo painel (os dados de
-  exemplo em `src/data/properties.ts` só aparecem sem Firebase configurado).
+- Textos reais dos termos (editar em Painel → Termos) e das regiões.
+- Número de WhatsApp e e-mail em `src/config.ts` são provisórios.
+- Identidade visual (logo, cores): `src/index.css` (tokens) e `src/components/Logo.tsx`.
+- Contas de WhatsApp Business, provedor e modelo de IA ainda não definidos.

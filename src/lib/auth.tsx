@@ -1,17 +1,12 @@
 import { createContext, useContext, useEffect, useState, type ReactNode } from 'react'
-import {
-  onAuthStateChanged,
-  sendPasswordResetEmail,
-  signInWithEmailAndPassword,
-  signOut as fbSignOut,
-  type User,
-} from 'firebase/auth'
-import { doc, getDoc } from 'firebase/firestore'
-import { auth, db } from './firebase'
+import type { Session } from '@supabase/supabase-js'
+import { supabase, isConfigured } from './supabase'
+import type { Profile } from '../types/db'
 
 interface AuthValue {
-  user: User | null
-  /** Tem documento em `admins/{uid}` — é o que as regras do Firestore exigem. */
+  session: Session | null
+  /** Perfil ativo da equipe. `null` = logado mas sem permissão (ou deslogado). */
+  profile: Profile | null
   isAdmin: boolean
   loading: boolean
   signIn: (email: string, password: string) => Promise<void>
@@ -22,43 +17,59 @@ interface AuthValue {
 const AuthContext = createContext<AuthValue | null>(null)
 
 export function AuthProvider({ children }: { children: ReactNode }) {
-  const [user, setUser] = useState<User | null>(null)
-  const [isAdmin, setIsAdmin] = useState(false)
-  const [loading, setLoading] = useState(Boolean(auth))
+  const [session, setSession] = useState<Session | null>(null)
+  const [profile, setProfile] = useState<Profile | null>(null)
+  const [loading, setLoading] = useState(isConfigured)
 
   useEffect(() => {
-    if (!auth || !db) return
-    const firestore = db
-    return onAuthStateChanged(auth, async (u) => {
-      setLoading(true)
-      setUser(u)
-      let admin = false
-      if (u) {
-        try {
-          admin = (await getDoc(doc(firestore, 'admins', u.uid))).exists()
-        } catch {
-          admin = false
-        }
+    if (!isConfigured) return
+    let active = true
+
+    async function load(s: Session | null) {
+      setSession(s)
+      if (!s) {
+        setProfile(null)
+        setLoading(false)
+        return
       }
-      setIsAdmin(admin)
+      const { data } = await supabase
+        .from('profiles')
+        .select('id, name, role, active')
+        .eq('id', s.user.id)
+        .maybeSingle()
+      if (!active) return
+      setProfile(data && data.active ? (data as Profile) : null)
       setLoading(false)
+    }
+
+    supabase.auth.getSession().then(({ data }) => load(data.session))
+    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+      // Fora do callback: chamar o Supabase aqui dentro pode travar a sessão.
+      setTimeout(() => load(s), 0)
     })
+    return () => {
+      active = false
+      sub.subscription.unsubscribe()
+    }
   }, [])
 
   const value: AuthValue = {
-    user,
-    isAdmin,
+    session,
+    profile,
+    isAdmin: profile?.role === 'admin',
     loading,
     signIn: async (email, password) => {
-      if (!auth) throw new Error('Firebase não configurado.')
-      await signInWithEmailAndPassword(auth, email.trim(), password)
+      const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
+      if (error) throw error
     },
     signOut: async () => {
-      if (auth) await fbSignOut(auth)
+      await supabase.auth.signOut()
     },
     resetPassword: async (email) => {
-      if (!auth) throw new Error('Firebase não configurado.')
-      await sendPasswordResetEmail(auth, email.trim())
+      const { error } = await supabase.auth.resetPasswordForEmail(email.trim(), {
+        redirectTo: `${window.location.origin}/painel`,
+      })
+      if (error) throw error
     },
   }
 
@@ -71,20 +82,15 @@ export function useAuth(): AuthValue {
   return ctx
 }
 
-/** Traduz códigos de erro do Firebase Auth para mensagens em português. */
+/** Traduz erros do Supabase Auth para mensagens em português. */
 export function authErrorMessage(error: unknown): string {
-  const code = (error as { code?: string })?.code
-  switch (code) {
-    case 'auth/invalid-credential':
-    case 'auth/wrong-password':
-    case 'auth/user-not-found':
-    case 'auth/invalid-email':
-      return 'E-mail ou senha incorretos.'
-    case 'auth/too-many-requests':
-      return 'Muitas tentativas. Aguarde alguns minutos e tente de novo.'
-    case 'auth/network-request-failed':
-      return 'Sem conexão. Verifique a internet e tente novamente.'
-    default:
-      return 'Não foi possível entrar. Tente novamente.'
+  const e = error as { code?: string; message?: string; status?: number }
+  if (e?.code === 'invalid_credentials' || e?.message === 'Invalid login credentials') {
+    return 'E-mail ou senha incorretos.'
   }
+  if (e?.code === 'over_request_rate_limit' || e?.status === 429) {
+    return 'Muitas tentativas. Aguarde alguns minutos e tente de novo.'
+  }
+  if (e?.message === 'Failed to fetch') return 'Sem conexão. Verifique a internet e tente novamente.'
+  return 'Não foi possível entrar. Tente novamente.'
 }
