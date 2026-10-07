@@ -4,6 +4,7 @@ import { AuthProvider, useAuth } from '../../lib/auth'
 import { isConfigured } from '../../lib/supabase'
 import Logo from '../../components/Logo'
 import Login from './Login'
+import SetPassword from './SetPassword'
 import { ghostButton, Notice } from '../../components/ui'
 
 /**
@@ -39,7 +40,7 @@ export default function PainelLayout() {
 }
 
 function Gate() {
-  const { session, profile, isAdmin, loading, signOut } = useAuth()
+  const { session, profile, isAdmin, loading, recovering, signOut } = useAuth()
 
   if (loading) {
     return (
@@ -50,6 +51,7 @@ function Gate() {
   }
 
   if (!session) return <Login />
+  if (recovering) return <SetPassword />
 
   if (!profile) {
     return (

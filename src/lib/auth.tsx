@@ -9,9 +9,12 @@ interface AuthValue {
   profile: Profile | null
   isAdmin: boolean
   loading: boolean
+  /** Entrou pelo link de redefinição de senha: precisa escolher uma nova. */
+  recovering: boolean
   signIn: (email: string, password: string) => Promise<void>
   signOut: () => Promise<void>
   resetPassword: (email: string) => Promise<void>
+  updatePassword: (password: string) => Promise<void>
 }
 
 const AuthContext = createContext<AuthValue | null>(null)
@@ -20,6 +23,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
   const [session, setSession] = useState<Session | null>(null)
   const [profile, setProfile] = useState<Profile | null>(null)
   const [loading, setLoading] = useState(isConfigured)
+  const [recovering, setRecovering] = useState(false)
 
   useEffect(() => {
     if (!isConfigured) return
@@ -43,7 +47,8 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     }
 
     supabase.auth.getSession().then(({ data }) => load(data.session))
-    const { data: sub } = supabase.auth.onAuthStateChange((_event, s) => {
+    const { data: sub } = supabase.auth.onAuthStateChange((event, s) => {
+      if (event === 'PASSWORD_RECOVERY') setRecovering(true)
       // Fora do callback: chamar o Supabase aqui dentro pode travar a sessão.
       setTimeout(() => load(s), 0)
     })
@@ -58,6 +63,7 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     profile,
     isAdmin: profile?.role === 'admin',
     loading,
+    recovering,
     signIn: async (email, password) => {
       const { error } = await supabase.auth.signInWithPassword({ email: email.trim(), password })
       if (error) throw error
@@ -70,6 +76,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
         redirectTo: `${window.location.origin}/painel`,
       })
       if (error) throw error
+    },
+    updatePassword: async (password) => {
+      const { error } = await supabase.auth.updateUser({ password })
+      if (error) throw error
+      setRecovering(false)
     },
   }
 
