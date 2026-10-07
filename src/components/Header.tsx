@@ -38,7 +38,7 @@ export default function Header() {
   return (
     <header
       className={`fixed inset-x-0 top-0 z-50 transition-colors duration-500 ${
-        solid ? 'border-b border-line bg-paper/95 backdrop-blur' : 'bg-gradient-to-b from-ink/55 to-transparent'
+        solid ? 'border-b border-line bg-paper/95 backdrop-blur' : 'bg-gradient-to-b from-ink/80 via-ink/40 to-transparent'
       }`}
     >
       <div className="mx-auto flex max-w-7xl items-center justify-between gap-6 px-5 py-5 sm:px-8">
@@ -60,7 +60,11 @@ export default function Header() {
           ))}
           <Link
             to="/comprador"
-            className="eyebrow border border-gold-soft/60 px-5 py-2.5 text-gold transition-colors hover:bg-gold hover:text-paper"
+            className={`eyebrow border px-5 py-2.5 transition-colors ${
+              solid
+                ? 'border-gold-soft/60 text-gold hover:bg-gold hover:text-paper'
+                : 'border-bone/70 text-bone hover:bg-bone hover:text-ink'
+            }`}
           >
             Quero comprar
           </Link>

@@ -10,7 +10,7 @@
   --color-card: #ece3d3;
   --color-line: #e2d8c6;
   --color-bone: #f8f4ea;
-  --color-mute: #7d7266;
+  --color-mute: #6b6155;
   --color-gold: #9c7a3f;
   --color-gold-soft: #7a5f30;
 }
@@ -28,7 +28,7 @@ body {
   background: var(--color-paper);
   color: var(--color-ink);
   font-family: var(--font-sans);
-  font-weight: 300;
+  font-weight: 400;
   -webkit-font-smoothing: antialiased;
   text-rendering: optimizeLegibility;
 }
@@ -43,7 +43,7 @@ img {
   /* small-caps tracked label used across the site */
   .eyebrow {
     font-family: var(--font-sans);
-    font-weight: 400;
+    font-weight: 500;
     text-transform: uppercase;
     letter-spacing: 0.28em;
     font-size: 0.68rem;
@@ -52,7 +52,7 @@ img {
 
   .display {
     font-family: var(--font-serif);
-    font-weight: 300;
+    font-weight: 400;
     line-height: 1.04;
     letter-spacing: -0.01em;
   }

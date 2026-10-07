@@ -18,7 +18,11 @@ export default function Logo({
         {SITE.name}
       </span>
       {!compact && (
-        <span className="eyebrow mt-1 block text-[0.58rem] tracking-[0.34em] text-gold-soft">
+        <span
+          className={`eyebrow mt-1 block text-[0.58rem] tracking-[0.34em] ${
+            theme === 'ink' ? 'text-gold-soft' : 'text-bone/80'
+          }`}
+        >
           {SITE.tagline}
         </span>
       )}
