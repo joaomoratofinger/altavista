@@ -60,7 +60,7 @@ export default function Header() {
           ))}
           <Link
             to="/comprador"
-            className={`eyebrow border px-5 py-2.5 transition-colors ${
+            className={`eyebrow rounded-full border px-5 py-2.5 transition-colors ${
               solid
                 ? 'border-gold-soft/60 text-gold hover:bg-gold hover:text-paper'
                 : 'border-bone/70 text-bone hover:bg-bone hover:text-ink'
@@ -70,7 +70,7 @@ export default function Header() {
           </Link>
           <Link
             to="/proprietario"
-            className="eyebrow bg-gold px-5 py-2.5 text-ink transition-colors hover:bg-gold-soft hover:text-bone"
+            className="eyebrow rounded-full bg-gold px-5 py-2.5 text-ink transition-colors hover:bg-gold-soft hover:text-bone"
           >
             Sou proprietário
           </Link>
@@ -104,14 +104,14 @@ export default function Header() {
           <Link
             to="/proprietario"
             onClick={() => setOpen(false)}
-            className="eyebrow mt-6 block bg-gold py-3.5 text-center text-ink"
+            className="eyebrow mt-6 block rounded-full bg-gold py-3.5 text-center text-ink"
           >
             Sou proprietário
           </Link>
           <Link
             to="/comprador"
             onClick={() => setOpen(false)}
-            className="eyebrow mt-3 block border border-gold-soft/60 py-3.5 text-center text-gold"
+            className="eyebrow mt-3 block rounded-full border border-gold-soft/60 py-3.5 text-center text-gold"
           >
             Quero comprar
           </Link>

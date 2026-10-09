@@ -4,6 +4,7 @@ import { isConfigured } from '../lib/supabase'
 import { getRegionCounts, listRegions, regionImageUrl } from '../data/site'
 import { SITE, whatsappLink } from '../config'
 import SectionHeading from '../components/SectionHeading'
+import { MessageCircle } from 'lucide-react'
 
 const HERO_IMAGE =
   'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=2000&q=80'
@@ -17,67 +18,76 @@ export default function Home() {
 
   return (
     <>
-      <section className="relative min-h-[88vh] w-full overflow-hidden">
+      <section className="relative min-h-[78vh] w-full overflow-hidden">
         <img src={HERO_IMAGE} alt="" className="absolute inset-0 h-full w-full object-cover" />
-        <div className="absolute inset-0 bg-gradient-to-t from-ink/95 via-ink/45 to-ink/10" />
+        <div className="absolute inset-0 bg-gradient-to-t from-ink/80 via-ink/35 to-ink/25" />
 
-        <div className="relative mx-auto flex min-h-[88vh] max-w-7xl flex-col justify-end px-5 pb-16 pt-32 sm:px-8">
+        <div className="relative mx-auto flex min-h-[78vh] max-w-7xl flex-col items-center justify-center px-5 pb-16 pt-32 text-center sm:px-8">
           <p className="eyebrow text-bone/80">
             {SITE.name} · {SITE.tagline}
           </p>
-          <h1 className="display mt-6 max-w-3xl text-6xl text-bone sm:text-7xl lg:text-8xl">
+          <h1 className="display mt-6 max-w-3xl text-5xl text-bone sm:text-6xl lg:text-7xl">
             Off-Market.
             <span className="mt-1 block italic text-bone/60">Homes</span>
           </h1>
-          <p className="eyebrow mt-8 max-w-2xl leading-relaxed tracking-[0.2em] text-bone/75">
+          <p className="eyebrow mt-6 max-w-2xl leading-relaxed tracking-[0.2em] text-bone/75">
             Casas de alto padrão fora do mercado
-            {regions && regions.length > 0 && <> · {regions.map((r) => r.name).join(' · ')}</>}
           </p>
 
-          <a
-            href={whatsappLink()}
-            target="_blank"
-            rel="noreferrer"
-            className="eyebrow mt-10 flex w-full max-w-xl items-center justify-center rounded-full bg-gold px-8 py-5 text-ink transition-colors hover:bg-gold-soft hover:text-bone"
-          >
-            Falar com a {SITE.name} (WhatsApp)
-          </a>
-
-          <div className="mt-6 flex flex-wrap gap-x-8 gap-y-3">
-            <Link to="/comprador" className="eyebrow text-bone/80 transition-colors hover:text-gold">
+          <div className="mt-10 flex w-full max-w-2xl flex-col gap-2 rounded-3xl bg-paper p-2 shadow-xl sm:flex-row sm:items-center sm:rounded-full">
+            <Link
+              to="/comprador"
+              className="eyebrow flex-1 rounded-full px-6 py-4 text-ink transition-colors hover:bg-paper-soft"
+            >
               Quero comprar
             </Link>
-            <Link to="/proprietario" className="eyebrow text-bone/80 transition-colors hover:text-gold">
+            <span className="hidden h-6 w-px bg-line sm:block" />
+            <Link
+              to="/proprietario"
+              className="eyebrow flex-1 rounded-full px-6 py-4 text-ink transition-colors hover:bg-paper-soft"
+            >
               Sou proprietário
             </Link>
+            <a
+              href={whatsappLink()}
+              target="_blank"
+              rel="noreferrer"
+              className="eyebrow flex items-center justify-center gap-2 rounded-full bg-gold px-7 py-4 text-ink transition-colors hover:bg-gold-soft hover:text-bone"
+            >
+              <MessageCircle size={16} /> WhatsApp
+            </a>
           </div>
         </div>
       </section>
 
-      <section className="mx-auto max-w-7xl px-5 py-20 sm:px-8 sm:py-28">
+      <section className="mx-auto max-w-7xl px-5 py-16 sm:px-8 sm:py-20">
         <SectionHeading title="Regiões" />
         {loading && <p className="mt-10 text-sm text-mute">Carregando…</p>}
         {!isConfigured && (
           <p className="mt-10 text-sm text-mute">As regiões aparecem aqui quando o banco de dados estiver configurado.</p>
         )}
-        <div className="mt-10 grid gap-x-6 gap-y-10 sm:grid-cols-2 lg:grid-cols-4">
+        <div className="-mx-5 mt-8 flex snap-x snap-mandatory gap-5 overflow-x-auto px-5 pb-4 sm:-mx-8 sm:px-8 lg:mx-0 lg:grid lg:grid-cols-4 lg:overflow-visible lg:px-0">
           {regions?.map((r) => {
             const total = counts?.[r.id]
             return (
-              <Link key={r.id} to={`/regiao/${r.slug}`} className="group block">
-                <div className="aspect-[4/5] overflow-hidden bg-card">
+              <Link
+                key={r.id}
+                to={`/regiao/${r.slug}`}
+                className="group block w-[72%] shrink-0 snap-start sm:w-[44%] lg:w-auto"
+              >
+                <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-card">
                   {r.images[0] && (
                     <img
                       src={regionImageUrl(r.images[0].path)}
                       alt={r.images[0].alt ?? r.name}
-                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.03]"
+                      className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
                     />
                   )}
                 </div>
                 <h3 className="display mt-4 text-2xl text-ink">{r.name}</h3>
                 {r.subtitle && <p className="mt-1 text-xs text-mute">{r.subtitle}</p>}
                 {total != null && (
-                  <p className="eyebrow mt-3 text-[0.6rem] text-gold-soft">
+                  <p className="eyebrow mt-2 text-[0.6rem] text-gold-soft">
                     {total} {total === 1 ? 'imóvel no acervo' : 'imóveis no acervo'}
                   </p>
                 )}
@@ -87,9 +97,9 @@ export default function Home() {
         </div>
       </section>
 
-      <section className="border-y border-line bg-paper-soft">
-        <div className="mx-auto grid max-w-7xl gap-12 px-5 py-20 sm:px-8 md:grid-cols-2">
-          <div>
+      <section className="mx-auto max-w-7xl px-5 pb-20 sm:px-8 sm:pb-28">
+        <div className="grid gap-6 md:grid-cols-2">
+          <div className="rounded-3xl border border-line bg-paper-soft p-8 sm:p-10">
             <p className="eyebrow text-gold-soft">Para proprietários</p>
             <h2 className="display mt-4 text-3xl text-ink sm:text-4xl">
               Sua casa apresentada só a quem importa.
@@ -102,7 +112,7 @@ export default function Home() {
               Cadastrar meu imóvel →
             </Link>
           </div>
-          <div>
+          <div className="rounded-3xl border border-line bg-paper-soft p-8 sm:p-10">
             <p className="eyebrow text-gold-soft">Para compradores</p>
             <h2 className="display mt-4 text-3xl text-ink sm:text-4xl">
               Acesso reservado, atendimento pelo WhatsApp.

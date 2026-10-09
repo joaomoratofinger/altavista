@@ -1,16 +1,16 @@
 import type { ReactNode } from 'react'
 
 export const inputClass =
-  'w-full border border-line bg-white/60 px-4 py-3 text-sm text-ink outline-none transition-colors placeholder:text-mute/60 focus:border-gold disabled:opacity-50'
+  'w-full rounded-xl border border-line bg-white/60 px-4 py-3 text-sm text-ink outline-none transition-colors placeholder:text-mute/60 focus:border-gold disabled:opacity-50'
 
 export const primaryButton =
-  'eyebrow inline-block bg-gold px-6 py-3.5 text-center text-ink transition-colors hover:bg-gold-soft hover:text-bone disabled:cursor-not-allowed disabled:opacity-50'
+  'eyebrow inline-block rounded-full bg-gold px-7 py-3.5 text-center text-ink transition-colors hover:bg-gold-soft hover:text-bone disabled:cursor-not-allowed disabled:opacity-50'
 
 export const ghostButton =
-  'eyebrow inline-block border border-line px-5 py-3 text-center text-ink transition-colors hover:border-gold-soft disabled:cursor-not-allowed disabled:opacity-50'
+  'eyebrow inline-block rounded-full border border-line px-6 py-3 text-center text-ink transition-colors hover:border-gold-soft disabled:cursor-not-allowed disabled:opacity-50'
 
 export const dangerButton =
-  'eyebrow inline-block border border-red-300 px-5 py-3 text-center text-red-800 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50'
+  'eyebrow inline-block rounded-full border border-red-300 px-5 py-3 text-center text-red-800 transition-colors hover:bg-red-50 disabled:cursor-not-allowed disabled:opacity-50'
 
 export function Field({
   label,
@@ -45,7 +45,7 @@ export function Notice({
     success: 'border-emerald-300 bg-emerald-50 text-emerald-900',
   }[tone]
   return (
-    <p role={tone === 'error' ? 'alert' : undefined} className={`border px-4 py-3 text-sm ${styles}`}>
+    <p role={tone === 'error' ? 'alert' : undefined} className={`rounded-xl border px-4 py-3 text-sm ${styles}`}>
       {children}
     </p>
   )
@@ -134,7 +134,7 @@ export function TermBox({
   return (
     <div className="space-y-4">
       <p className="eyebrow text-mute">{title}</p>
-      <div className="max-h-48 overflow-y-auto whitespace-pre-line border border-line bg-white/50 p-4 text-xs leading-relaxed text-ink/80">
+      <div className="max-h-48 overflow-y-auto whitespace-pre-line rounded-xl border border-line bg-white/50 p-4 text-xs leading-relaxed text-ink/80">
         {body ?? 'Carregando termo…'}
       </div>
       <Check checked={accepted} onChange={onChange} label={acceptLabel} />
@@ -149,5 +149,5 @@ export function StatusPill({ tone, children }: { tone: 'wait' | 'ok' | 'bad' | '
     bad: 'border-red-300 bg-red-50 text-red-800',
     neutral: 'border-line bg-paper-soft text-ink/70',
   }[tone]
-  return <span className={`eyebrow inline-block border px-2.5 py-1 text-[0.58rem] ${styles}`}>{children}</span>
+  return <span className={`eyebrow inline-block rounded-full border px-2.5 py-1 text-[0.58rem] ${styles}`}>{children}</span>
 }

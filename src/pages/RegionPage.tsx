@@ -36,7 +36,7 @@ export default function RegionPage() {
           <img
             src={regionImageUrl(cover.path)}
             alt={cover.alt ?? region.name}
-            className="aspect-[16/9] w-full object-cover"
+            className="aspect-[16/9] w-full rounded-2xl object-cover"
           />
         </div>
       )}
@@ -45,7 +45,7 @@ export default function RegionPage() {
         <div className="grid gap-12 md:grid-cols-[1.4fr_1fr]">
           <div className="whitespace-pre-line text-base leading-relaxed text-ink/80">{region.body}</div>
 
-          <aside className="h-fit space-y-4 border border-line bg-paper-soft p-6">
+          <aside className="h-fit space-y-4 rounded-2xl border border-line bg-paper-soft p-6">
             <p className="eyebrow text-mute">O acervo é reservado</p>
             <p className="text-sm leading-relaxed text-ink/70">
               Os imóveis desta região não são divulgados publicamente. Cadastre-se para participar.
@@ -67,7 +67,7 @@ export default function RegionPage() {
                 src={regionImageUrl(img.path)}
                 alt={img.alt ?? region.name}
                 loading="lazy"
-                className="aspect-[4/3] w-full object-cover"
+                className="aspect-[4/3] w-full rounded-2xl object-cover"
               />
             ))}
           </div>
