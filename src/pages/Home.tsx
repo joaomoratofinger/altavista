@@ -2,9 +2,8 @@ import { Link } from 'react-router-dom'
 import { useAsync } from '../lib/useAsync'
 import { isConfigured } from '../lib/supabase'
 import { getRegionCounts, listRegions, regionImageUrl } from '../data/site'
-import { SITE } from '../config'
+import { SITE, whatsappLink } from '../config'
 import SectionHeading from '../components/SectionHeading'
-import { primaryButton } from '../components/ui'
 
 const HERO_IMAGE =
   'https://images.unsplash.com/photo-1600596542815-ffad4c1539a9?auto=format&fit=crop&w=2000&q=80'
@@ -23,23 +22,32 @@ export default function Home() {
         <div className="absolute inset-0 bg-gradient-to-t from-ink/95 via-ink/45 to-ink/10" />
 
         <div className="relative mx-auto flex min-h-[88vh] max-w-7xl flex-col justify-end px-5 pb-16 pt-32 sm:px-8">
-          <p className="eyebrow text-bone/70">{SITE.tagline}</p>
-          <h1 className="display mt-6 max-w-3xl text-5xl text-bone sm:text-6xl lg:text-7xl">
-            Casas que não estão à venda.
+          <p className="eyebrow text-bone/80">
+            {SITE.name} · {SITE.tagline}
+          </p>
+          <h1 className="display mt-6 max-w-3xl text-6xl text-bone sm:text-7xl lg:text-8xl">
+            Off-Market.
+            <span className="mt-1 block italic text-bone/60">Homes</span>
           </h1>
-          <p className="mt-6 max-w-xl text-sm leading-relaxed text-bone/75">
-            Um acervo reservado de residências de alto padrão, apresentado apenas a compradores
-            cadastrados e aprovados pela nossa equipe.
+          <p className="eyebrow mt-8 max-w-2xl leading-relaxed tracking-[0.2em] text-bone/75">
+            Casas de alto padrão fora do mercado
+            {regions && regions.length > 0 && <> · {regions.map((r) => r.name).join(' · ')}</>}
           </p>
 
-          <div className="mt-10 flex flex-wrap gap-4">
-            <Link to="/comprador" className={primaryButton}>
+          <a
+            href={whatsappLink()}
+            target="_blank"
+            rel="noreferrer"
+            className="eyebrow mt-10 flex w-full max-w-xl items-center justify-center rounded-full bg-gold px-8 py-5 text-ink transition-colors hover:bg-gold-soft hover:text-bone"
+          >
+            Falar com a {SITE.name} (WhatsApp)
+          </a>
+
+          <div className="mt-6 flex flex-wrap gap-x-8 gap-y-3">
+            <Link to="/comprador" className="eyebrow text-bone/80 transition-colors hover:text-gold">
               Quero comprar
             </Link>
-            <Link
-              to="/proprietario"
-              className="eyebrow border border-bone/30 px-7 py-3.5 text-bone transition-colors hover:border-gold hover:text-gold"
-            >
+            <Link to="/proprietario" className="eyebrow text-bone/80 transition-colors hover:text-gold">
               Sou proprietário
             </Link>
           </div>
