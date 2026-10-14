@@ -5,7 +5,7 @@ import { downloadCsv } from '../../lib/csv'
 import { exportBuyersRows, listBuyers } from '../../data/admin'
 import { formatDate, formatPrice } from '../../lib/format'
 import { BUYER_STATUS_LABELS, type BuyerStatus } from '../../types/db'
-import { ghostButton, Notice, StatusPill } from '../../components/ui'
+import { ghostButton, Notice, primaryButton, StatusPill } from '../../components/ui'
 
 const TABS: Array<{ value: BuyerStatus | ''; label: string }> = [
   { value: '', label: 'Todos' },
@@ -36,11 +36,16 @@ export default function BuyerList() {
           <p className="eyebrow text-gold-soft">Cadastro</p>
           <h1 className="display mt-2 text-4xl text-ink">Compradores</h1>
         </div>
-        {isAdmin && (
-          <button type="button" onClick={onExport} className={ghostButton}>
-            Exportar planilha
-          </button>
-        )}
+        <div className="flex flex-wrap gap-3">
+          {isAdmin && (
+            <button type="button" onClick={onExport} className={ghostButton}>
+              Exportar planilha
+            </button>
+          )}
+          <Link to="/painel/compradores/novo" className={primaryButton}>
+            Cadastrar comprador
+          </Link>
+        </div>
       </div>
 
       <div className="mt-8 flex gap-5 overflow-x-auto border-b border-line pb-3">

@@ -1,6 +1,6 @@
 import { BUCKET_PRIVATE, BUCKET_REGIONS, supabase } from '../lib/supabase'
 import { extensionFor, shrinkImage } from '../lib/images'
-import type { MediaKind, Region, Term, TermKind } from '../types/db'
+import type { AcervoItem, MediaKind, Region, Term, TermKind } from '../types/db'
 
 /**
  * Acesso PÚBLICO (visitantes): regiões ativas, termos ativos, contagens e os
@@ -137,13 +137,21 @@ export async function submitBuyer(data: BuyerSubmission): Promise<void> {
   if (error) throw error
 }
 
+/** Área do comprador logado. `null` = login sem aprovação ativa. */
+export async function getMyAcervo(): Promise<{ name: string; properties: AcervoItem[] } | null> {
+  const { data, error } = await supabase.rpc('my_acervo')
+  if (error) throw error
+  return data as { name: string; properties: AcervoItem[] } | null
+}
+
 /** Mensagens `raise exception` do banco são em português e seguras para exibir. */
 export function submissionErrorMessage(error: unknown): string {
   const msg = (error as { message?: string })?.message ?? ''
   const known = [
     'Nome inválido', 'WhatsApp inválido', 'E-mail inválido', 'CPF inválido', 'Região inválida',
     'É necessário aceitar', 'Informe', 'Envie ao menos', 'Máximo de 30', 'Faixa de valor inválida',
-    'Muitas solicitações', 'Termo indisponível',
+    'Muitas solicitações', 'Termo indisponível', 'Já existe', 'Este e-mail já', 'A senha precisa',
+    'Aprove o comprador', 'Sem permissão', 'Comprador não encontrado',
   ]
   if (known.some((k) => msg.startsWith(k))) return msg
   if (msg === 'Failed to fetch') return 'Sem conexão. Verifique a internet e tente novamente.'

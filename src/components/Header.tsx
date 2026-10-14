@@ -59,6 +59,12 @@ export default function Header() {
             </NavLink>
           ))}
           <Link
+            to="/entrar"
+            className={`eyebrow transition-colors hover:text-gold ${solid ? 'text-ink/70' : 'text-bone/80'}`}
+          >
+            Entrar
+          </Link>
+          <Link
             to="/comprador"
             className={`eyebrow rounded-full border px-5 py-2.5 transition-colors ${
               solid
@@ -101,6 +107,13 @@ export default function Header() {
               {item.label}
             </NavLink>
           ))}
+          <Link
+            to="/entrar"
+            onClick={() => setOpen(false)}
+            className="display block border-b border-line py-4 text-lg text-ink"
+          >
+            Entrar
+          </Link>
           <Link
             to="/proprietario"
             onClick={() => setOpen(false)}

@@ -6,11 +6,15 @@ import {
   addTeamNote,
   compatibleProperties,
   deleteBuyer,
+  generatePassword,
   getBuyer,
   listAllRegions,
   listInteractions,
+  revokeBuyerAccess,
+  setBuyerAccess,
   setBuyerStatus,
 } from '../../data/admin'
+import { submissionErrorMessage } from '../../data/site'
 import { formatCpf, formatDate, formatDateTime, formatPhone, formatPrice } from '../../lib/format'
 import { BUYER_STATUS_LABELS, type BuyerStatus } from '../../types/db'
 import { dangerButton, Field, ghostButton, inputClass, Notice, primaryButton, StatusPill } from '../../components/ui'
@@ -34,6 +38,7 @@ export default function BuyerReview() {
   const [teamNote, setTeamNote] = useState('')
   const [busy, setBusy] = useState(false)
   const [actionError, setActionError] = useState<string | null>(null)
+  const [credentials, setCredentials] = useState<{ email: string; password: string } | null>(null)
 
   if (loading) return <p className="text-sm text-mute">Carregando…</p>
   if (error) return <Notice tone="error">Não foi possível carregar o comprador.</Notice>
@@ -61,6 +66,37 @@ export default function BuyerReview() {
       setReload((n) => n + 1)
     } catch {
       setActionError('Não foi possível atualizar o status.')
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function onCreateAccess() {
+    if (buyer!.user_id && !window.confirm('Gerar nova senha? A senha atual deixa de funcionar.')) return
+    setBusy(true)
+    setActionError(null)
+    try {
+      const password = generatePassword()
+      const email = await setBuyerAccess(id, password)
+      setCredentials({ email, password })
+      setReload((n) => n + 1)
+    } catch (err) {
+      setActionError(submissionErrorMessage(err))
+    } finally {
+      setBusy(false)
+    }
+  }
+
+  async function onRevokeAccess() {
+    if (!window.confirm('Remover o acesso? O comprador não poderá mais entrar.')) return
+    setBusy(true)
+    setActionError(null)
+    try {
+      await revokeBuyerAccess(id)
+      setCredentials(null)
+      setReload((n) => n + 1)
+    } catch {
+      setActionError('Não foi possível remover o acesso.')
     } finally {
       setBusy(false)
     }
@@ -151,6 +187,52 @@ export default function BuyerReview() {
       </section>
 
       {buyer.status === 'aprovado' && (
+        <section className="space-y-4 border-t border-line pt-8">
+          <h2 className="display text-2xl text-ink">Acesso do comprador</h2>
+          <p className="text-sm text-mute">
+            {buyer.user_id
+              ? 'Este comprador já tem login. Gerar uma nova senha invalida a anterior.'
+              : 'Ainda sem login. Crie a senha e envie ao comprador (por exemplo, pelo WhatsApp).'}
+          </p>
+          {credentials && (
+            <div className="space-y-3 rounded-xl border border-emerald-300 bg-emerald-50 p-4 text-sm text-emerald-900">
+              <p>
+                <strong>Copie agora:</strong> a senha não fica salva e não poderá ser vista de novo.
+              </p>
+              <p className="break-all font-mono">
+                Login: {credentials.email}
+                <br />
+                Senha: {credentials.password}
+              </p>
+              <div className="flex flex-wrap gap-3">
+                <button type="button" className={ghostButton} onClick={() => navigator.clipboard.writeText(accessMessage(credentials))}>
+                  Copiar mensagem
+                </button>
+                <a
+                  className={ghostButton}
+                  target="_blank"
+                  rel="noreferrer"
+                  href={`https://wa.me/${buyer.whatsapp}?text=${encodeURIComponent(accessMessage(credentials))}`}
+                >
+                  Abrir no WhatsApp
+                </a>
+              </div>
+            </div>
+          )}
+          <div className="flex flex-wrap gap-3">
+            <button type="button" disabled={busy} className={primaryButton} onClick={onCreateAccess}>
+              {buyer.user_id ? 'Gerar nova senha' : 'Criar acesso'}
+            </button>
+            {buyer.user_id && (
+              <button type="button" disabled={busy} className={dangerButton} onClick={onRevokeAccess}>
+                Remover acesso
+              </button>
+            )}
+          </div>
+        </section>
+      )}
+
+      {buyer.status === 'aprovado' && (
         <section>
           <h2 className="display text-2xl text-ink">Imóveis compatíveis</h2>
           {matches?.length === 0 && <p className="mt-4 text-sm text-mute">Nenhum imóvel compatível no acervo.</p>}
@@ -202,6 +284,15 @@ export default function BuyerReview() {
         </section>
       )}
     </div>
+  )
+}
+
+function accessMessage({ email, password }: { email: string; password: string }): string {
+  return (
+    `Olá! Seu acesso ao Altavista Residences foi liberado.\n\n` +
+    `Entre em: ${window.location.origin}/entrar\n` +
+    `Login: ${email}\nSenha: ${password}\n\n` +
+    `Guarde esta senha com cuidado e não a compartilhe.`
   )
 }
 

@@ -119,6 +119,22 @@ export interface Buyer {
   terms_version: number
   terms_accepted_at: string
   created_at: string
+  /** Login do comprador (null = ainda sem acesso). */
+  user_id: string | null
+  source: 'site' | 'manual'
+}
+
+/** Imóvel como o comprador vê: sem condomínio, proprietário nem fotos. */
+export interface AcervoItem {
+  id: string
+  region: string
+  land_area_m2: number | null
+  built_area_m2: number | null
+  bedrooms: number | null
+  suites: number | null
+  parking: number | null
+  highlights: string | null
+  asking_price: number | null
 }
 
 export interface Interaction {

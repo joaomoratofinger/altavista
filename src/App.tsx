@@ -12,6 +12,11 @@ import PropertyList from './pages/painel/PropertyList'
 import PropertyReview from './pages/painel/PropertyReview'
 import BuyerList from './pages/painel/BuyerList'
 import BuyerReview from './pages/painel/BuyerReview'
+import BuyerCreate from './pages/painel/BuyerCreate'
+import Entrar from './pages/Entrar'
+import Acervo from './pages/Acervo'
+import { AuthProvider } from './lib/auth'
+import { isConfigured } from './lib/supabase'
 import { RegionFormPage, RegionList } from './pages/painel/RegionAdmin'
 import TermsAdmin from './pages/painel/TermsAdmin'
 import LogAdmin from './pages/painel/LogAdmin'
@@ -23,6 +28,16 @@ function RequireAdmin() {
   return isAdmin ? <Outlet /> : <Navigate to="/painel" replace />
 }
 
+/** Rotas do comprador logado: só aqui a sessão do Supabase é carregada no site público. */
+function ClientArea() {
+  if (!isConfigured) return <Outlet />
+  return (
+    <AuthProvider>
+      <Outlet />
+    </AuthProvider>
+  )
+}
+
 export default function App() {
   return (
     <Routes>
@@ -32,6 +47,10 @@ export default function App() {
         <Route path="proprietario" element={<OwnerForm />} />
         <Route path="comprador" element={<BuyerForm />} />
         <Route path="obrigado" element={<Thanks />} />
+        <Route element={<ClientArea />}>
+          <Route path="entrar" element={<Entrar />} />
+          <Route path="acervo" element={<Acervo />} />
+        </Route>
         <Route path="*" element={<NotFound />} />
       </Route>
       <Route path="painel" element={<PainelLayout />}>
@@ -39,6 +58,7 @@ export default function App() {
         <Route path="imoveis" element={<PropertyList />} />
         <Route path="imoveis/:id" element={<PropertyReview />} />
         <Route path="compradores" element={<BuyerList />} />
+        <Route path="compradores/novo" element={<BuyerCreate />} />
         <Route path="compradores/:id" element={<BuyerReview />} />
         <Route element={<RequireAdmin />}>
           <Route path="regioes" element={<RegionList />} />

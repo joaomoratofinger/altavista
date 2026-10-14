@@ -87,7 +87,7 @@ export default function BuyerForm() {
       <h1 className="display mt-4 text-4xl text-ink sm:text-5xl">Solicite seu acesso</h1>
       <p className="mt-5 max-w-xl text-sm leading-relaxed text-mute">
         O acervo é reservado. Todo cadastro passa por aprovação manual da nossa equipe; depois de
-        aprovado, você recebe uma mensagem no WhatsApp com o acesso.
+        aprovado, nossa equipe entra em contato pelo WhatsApp com o seu acesso.
       </p>
 
       {!isConfigured && (

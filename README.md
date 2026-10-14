@@ -29,9 +29,11 @@ Use um projeto para **homologação** e outro para **produção**.
 
 1. Crie o projeto em supabase.com e copie *Project URL* e *anon key*
    (Project Settings → API) para o `.env`.
-2. No **SQL Editor**, rode em ordem `supabase/migrations/0001_schema.sql` e
-   `0002_security_and_functions.sql`. Eles criam tabelas, permissões (RLS),
-   funções, buckets e os dados iniciais (4 regiões e termos provisórios).
+2. No **SQL Editor**, rode em ordem `supabase/migrations/0001_schema.sql`,
+   `0002_security_and_functions.sql` e `0003_buyer_access.sql`. Eles criam
+   tabelas, permissões (RLS), funções, buckets e os dados iniciais (4 regiões
+   e termos provisórios). A 0003 habilita o cadastro manual de compradores e o
+   login deles (`/entrar` → `/acervo`) enquanto o WhatsApp oficial não existe.
 3. Em **Authentication → Users**, crie o primeiro usuário da equipe e rode:
    ```sql
    insert into profiles (id, name, role) values ('<uuid do usuário>', 'Nome', 'admin');

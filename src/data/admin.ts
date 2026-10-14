@@ -136,6 +136,41 @@ export async function setBuyerStatus(id: string, status: BuyerStatus, note?: str
   if (error) throw error
 }
 
+export interface ManualBuyer {
+  name: string
+  cpf: string
+  whatsapp: string
+  email: string
+  region_ids: string[]
+  price_min?: number
+  price_max?: number
+  property_profile?: string
+  kind: 'corretor' | 'final'
+  approve: boolean
+}
+
+/** Cadastro feito pela equipe (sem WhatsApp oficial ainda). Devolve o id criado. */
+export async function createBuyerManually(data: ManualBuyer): Promise<string> {
+  return check(await supabase.rpc('staff_create_buyer', { p: data })) as string
+}
+
+/** Cria o login do comprador aprovado (ou troca a senha dele). Devolve o e-mail de acesso. */
+export async function setBuyerAccess(buyerId: string, password: string): Promise<string> {
+  return check(await supabase.rpc('set_buyer_access', { p_buyer: buyerId, p_password: password })) as string
+}
+
+export async function revokeBuyerAccess(buyerId: string): Promise<void> {
+  const { error } = await supabase.rpc('revoke_buyer_access', { p_buyer: buyerId })
+  if (error) throw error
+}
+
+/** Senha aleatória legível (sem 0/O/1/l/I), pronta para enviar ao comprador. */
+export function generatePassword(length = 12): string {
+  const alphabet = 'abcdefghjkmnpqrstuvwxyzABCDEFGHJKMNPQRSTUVWXYZ23456789'
+  const bytes = crypto.getRandomValues(new Uint8Array(length))
+  return Array.from(bytes, (b) => alphabet[b % alphabet.length]).join('')
+}
+
 export async function compatibleProperties(buyerId: string): Promise<Property[]> {
   return check(await supabase.rpc('compatible_properties', { p_buyer: buyerId })) as Property[]
 }
