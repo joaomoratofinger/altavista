@@ -1,7 +1,7 @@
 import { Link } from 'react-router-dom'
 import { listingImageUrl } from '../data/site'
 import { formatNumber, formatPrice } from '../lib/format'
-import { LISTING_STATUS_LABELS, type Listing } from '../types/db'
+import { LISTING_PURPOSE_LABELS, LISTING_STATUS_LABELS, type Listing } from '../types/db'
 
 export function listingSpecLine(l: Listing): string {
   return [
@@ -11,6 +11,12 @@ export function listingSpecLine(l: Listing): string {
   ]
     .filter(Boolean)
     .join(' · ')
+}
+
+/** "R$ 1.500.000" (venda) ou "R$ 8.000/mês" (aluguel); sem valor => "Sob consulta". */
+export function listingPriceLabel(l: Pick<Listing, 'price' | 'purpose'>): string {
+  if (l.price == null) return 'Sob consulta'
+  return l.purpose === 'aluguel' ? `${formatPrice(l.price)}/mês` : formatPrice(l.price)
 }
 
 export default function ListingCard({ listing }: { listing: Listing }) {
@@ -26,6 +32,9 @@ export default function ListingCard({ listing }: { listing: Listing }) {
             className="h-full w-full object-cover transition-transform duration-700 group-hover:scale-[1.05]"
           />
         )}
+        <span className="eyebrow absolute right-3 top-3 rounded-full bg-paper/90 px-3 py-1.5 text-[0.6rem] text-ink backdrop-blur">
+          {LISTING_PURPOSE_LABELS[listing.purpose]}
+        </span>
         {listing.status !== 'disponivel' && (
           <span className="eyebrow absolute left-3 top-3 rounded-full bg-ink/80 px-3 py-1.5 text-[0.6rem] text-bone backdrop-blur">
             {LISTING_STATUS_LABELS[listing.status]}
@@ -37,7 +46,7 @@ export default function ListingCard({ listing }: { listing: Listing }) {
         <p className="eyebrow mt-2 text-mute">{listing.location}</p>
         <p className="mt-3 text-sm text-ink/70">{listingSpecLine(listing)}</p>
         <p className="mt-3 text-sm tracking-wide text-gold">
-          {listing.price == null ? 'Sob consulta' : formatPrice(listing.price)}
+          {listingPriceLabel(listing)}
         </p>
       </div>
     </Link>

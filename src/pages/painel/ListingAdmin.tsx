@@ -12,8 +12,9 @@ import {
   uploadListingImage,
 } from '../../data/admin'
 import { listingImageUrl } from '../../data/site'
-import { formatPrice, parseNum } from '../../lib/format'
-import { LISTING_STATUS_LABELS, type Listing, type ListingPrivate, type ListingStatus, type RegionImage } from '../../types/db'
+import { parseNum } from '../../lib/format'
+import { listingPriceLabel } from '../../components/ListingCard'
+import { LISTING_PURPOSE_LABELS, LISTING_STATUS_LABELS, type Listing, type ListingPrivate, type ListingPurpose, type ListingStatus, type RegionImage } from '../../types/db'
 import { Check, dangerButton, Field, ghostButton, inputClass, Notice, NumField, primaryButton, Section, StatusPill } from '../../components/ui'
 
 export function ListingList() {
@@ -48,7 +49,7 @@ export function ListingList() {
                 <div className="min-w-0">
                   <p className="display truncate text-xl text-ink">{l.title}</p>
                   <p className="mt-0.5 truncate text-xs text-mute">
-                    {l.location} · {l.price == null ? 'Sob consulta' : formatPrice(l.price)}
+                    {LISTING_PURPOSE_LABELS[l.purpose]} · {l.location} · {listingPriceLabel(l)}
                   </p>
                 </div>
               </div>
@@ -92,6 +93,7 @@ function ListingForm({ initial, initialPrivate }: { initial: Listing | null; ini
   const [location, setLocation] = useState(initial?.location ?? '')
   const [regionId, setRegionId] = useState(initial?.region_id ?? '')
   const [status, setStatus] = useState<ListingStatus>(initial?.status ?? 'disponivel')
+  const [purpose, setPurpose] = useState<ListingPurpose>(initial?.purpose ?? 'venda')
   const [price, setPrice] = useState(numText(initial?.price))
   const [built, setBuilt] = useState(numText(initial?.built_area_m2))
   const [land, setLand] = useState(numText(initial?.land_area_m2))
@@ -174,6 +176,7 @@ function ListingForm({ initial, initialPrivate }: { initial: Listing | null; ini
           location: location.trim(),
           region_id: regionId || null,
           status,
+          purpose,
           price: vPrice,
           built_area_m2: vBuilt,
           land_area_m2: vLand,
@@ -265,7 +268,19 @@ function ListingForm({ initial, initialPrivate }: { initial: Listing | null; ini
               ))}
             </select>
           </Field>
-          <NumField label="Valor (R$)" value={price} onChange={setPrice} hint="Vazio = “Sob consulta”." />
+          <Field label="Finalidade">
+            <select className={inputClass} value={purpose} onChange={(e) => setPurpose(e.target.value as ListingPurpose)}>
+              {(Object.keys(LISTING_PURPOSE_LABELS) as ListingPurpose[]).map((p) => (
+                <option key={p} value={p}>{LISTING_PURPOSE_LABELS[p]}</option>
+              ))}
+            </select>
+          </Field>
+          <NumField
+            label={purpose === 'aluguel' ? 'Aluguel mensal (R$)' : 'Valor (R$)'}
+            value={price}
+            onChange={setPrice}
+            hint="Vazio = “Sob consulta”."
+          />
           <NumField label="Área construída (m²)" value={built} onChange={setBuilt} />
           <NumField label="Terreno (m²)" value={land} onChange={setLand} />
           <NumField label="Dormitórios" value={bedrooms} onChange={setBedrooms} />

@@ -176,6 +176,13 @@ export const LISTING_STATUS_LABELS: Record<ListingStatus, string> = {
   vendido: 'Vendido',
 }
 
+export type ListingPurpose = 'venda' | 'aluguel'
+
+export const LISTING_PURPOSE_LABELS: Record<ListingPurpose, string> = {
+  venda: 'Venda',
+  aluguel: 'Aluguel',
+}
+
 export interface Listing {
   id: string
   slug: string
@@ -183,6 +190,7 @@ export interface Listing {
   location: string
   region_id: string | null
   status: ListingStatus
+  purpose: ListingPurpose
   price: number | null
   built_area_m2: number | null
   land_area_m2: number | null

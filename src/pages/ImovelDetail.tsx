@@ -2,9 +2,10 @@ import { useState } from 'react'
 import { Link, useParams } from 'react-router-dom'
 import { useAsync } from '../lib/useAsync'
 import { getListingBySlug, listingImageUrl } from '../data/site'
-import { formatArea, formatPrice } from '../lib/format'
+import { formatArea } from '../lib/format'
 import { whatsappLink } from '../config'
-import { LISTING_STATUS_LABELS } from '../types/db'
+import { LISTING_PURPOSE_LABELS, LISTING_STATUS_LABELS } from '../types/db'
+import { listingPriceLabel } from '../components/ListingCard'
 import { primaryButton, ghostButton } from '../components/ui'
 import NotFound from './NotFound'
 
@@ -26,6 +27,7 @@ export default function ImovelDetail() {
     ['Dormitórios', listing.bedrooms != null ? String(listing.bedrooms) : null],
     ['Suítes', listing.suites != null ? String(listing.suites) : null],
     ['Vagas', listing.parking != null ? String(listing.parking) : null],
+    ['Finalidade', LISTING_PURPOSE_LABELS[listing.purpose]],
     ['Situação', LISTING_STATUS_LABELS[listing.status]],
   ]
   const message = `Olá, tenho interesse no imóvel "${listing.title}" (${listing.location}). Podemos conversar?`
@@ -92,8 +94,8 @@ export default function ImovelDetail() {
         </div>
 
         <aside className="h-fit space-y-4 rounded-2xl border border-line bg-paper-soft p-7 lg:sticky lg:top-28">
-          <p className="eyebrow text-mute">Valor</p>
-          <p className="display text-3xl text-gold">{listing.price == null ? 'Sob consulta' : formatPrice(listing.price)}</p>
+          <p className="eyebrow text-mute">{listing.purpose === 'aluguel' ? 'Aluguel' : 'Valor'}</p>
+          <p className="display text-3xl text-gold">{listingPriceLabel(listing)}</p>
           <p className="text-sm leading-relaxed text-mute">
             Visitas e documentação são agendadas com a nossa equipe.
           </p>
