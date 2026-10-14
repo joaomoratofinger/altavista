@@ -13,6 +13,9 @@ import PropertyReview from './pages/painel/PropertyReview'
 import BuyerList from './pages/painel/BuyerList'
 import BuyerReview from './pages/painel/BuyerReview'
 import BuyerCreate from './pages/painel/BuyerCreate'
+import { ListingFormPage, ListingList } from './pages/painel/ListingAdmin'
+import Imoveis from './pages/Imoveis'
+import ImovelDetail from './pages/ImovelDetail'
 import Entrar from './pages/Entrar'
 import Acervo from './pages/Acervo'
 import { AuthProvider } from './lib/auth'
@@ -44,6 +47,8 @@ export default function App() {
       <Route element={<Layout />}>
         <Route index element={<Home />} />
         <Route path="regiao/:slug" element={<RegionPage />} />
+        <Route path="imoveis" element={<Imoveis />} />
+        <Route path="imovel/:slug" element={<ImovelDetail />} />
         <Route path="proprietario" element={<OwnerForm />} />
         <Route path="comprador" element={<BuyerForm />} />
         <Route path="obrigado" element={<Thanks />} />
@@ -57,6 +62,9 @@ export default function App() {
         <Route index element={<Dashboard />} />
         <Route path="imoveis" element={<PropertyList />} />
         <Route path="imoveis/:id" element={<PropertyReview />} />
+        <Route path="anuncios" element={<ListingList />} />
+        <Route path="anuncios/novo" element={<ListingFormPage />} />
+        <Route path="anuncios/:id" element={<ListingFormPage />} />
         <Route path="compradores" element={<BuyerList />} />
         <Route path="compradores/novo" element={<BuyerCreate />} />
         <Route path="compradores/:id" element={<BuyerReview />} />

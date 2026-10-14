@@ -1,6 +1,6 @@
-import { BUCKET_PRIVATE, BUCKET_REGIONS, supabase } from '../lib/supabase'
+import { BUCKET_LISTINGS, BUCKET_PRIVATE, BUCKET_REGIONS, supabase } from '../lib/supabase'
 import { extensionFor, shrinkImage } from '../lib/images'
-import type { AcervoItem, MediaKind, Region, Term, TermKind } from '../types/db'
+import type { AcervoItem, Listing, MediaKind, Region, Term, TermKind } from '../types/db'
 
 /**
  * Acesso PÚBLICO (visitantes): regiões ativas, termos ativos, contagens e os
@@ -10,6 +10,31 @@ import type { AcervoItem, MediaKind, Region, Term, TermKind } from '../types/db'
 
 export function regionImageUrl(path: string): string {
   return supabase.storage.from(BUCKET_REGIONS).getPublicUrl(path).data.publicUrl
+}
+
+export function listingImageUrl(path: string): string {
+  return supabase.storage.from(BUCKET_LISTINGS).getPublicUrl(path).data.publicUrl
+}
+
+/** Imóveis públicos publicados (vitrine). Mais recentes primeiro. */
+export async function listPublicListings(opts: { featured?: boolean; limit?: number } = {}): Promise<Listing[]> {
+  let q = supabase.from('listings').select('*').eq('published', true).order('created_at', { ascending: false })
+  if (opts.featured) q = q.eq('featured', true)
+  if (opts.limit) q = q.limit(opts.limit)
+  const { data, error } = await q
+  if (error) throw error
+  return data as Listing[]
+}
+
+export async function getListingBySlug(slug: string): Promise<Listing | null> {
+  const { data, error } = await supabase
+    .from('listings')
+    .select('*')
+    .eq('slug', slug)
+    .eq('published', true)
+    .maybeSingle()
+  if (error) throw error
+  return data as Listing | null
 }
 
 export async function listRegions(): Promise<Region[]> {

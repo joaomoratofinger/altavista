@@ -33,7 +33,10 @@ export default function Header() {
   }, [open])
 
   const solid = scrolled || open
-  const items = (regions ?? []).map((r) => ({ to: `/regiao/${r.slug}`, label: r.name }))
+  const items = [
+    { to: '/imoveis', label: 'Imóveis' },
+    ...(regions ?? []).map((r) => ({ to: `/regiao/${r.slug}`, label: r.name })),
+  ]
 
   return (
     <header

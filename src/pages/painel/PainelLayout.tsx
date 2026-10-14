@@ -99,6 +99,7 @@ function navLinks(isAdmin: boolean): NavItem[] {
     { to: '/painel', label: 'Resumo', end: true },
     { to: '/painel/imoveis', label: 'Imóveis' },
     { to: '/painel/compradores', label: 'Compradores' },
+    { to: '/painel/anuncios', label: 'Anúncios' },
     ...(isAdmin
       ? [
           { to: '/painel/regioes', label: 'Regiões' },

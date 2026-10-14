@@ -1,7 +1,8 @@
 import { Link } from 'react-router-dom'
 import { useAsync } from '../lib/useAsync'
 import { isConfigured } from '../lib/supabase'
-import { getRegionCounts, listRegions, regionImageUrl } from '../data/site'
+import { getRegionCounts, listPublicListings, listRegions, regionImageUrl } from '../data/site'
+import ListingCard from '../components/ListingCard'
 import { SITE, whatsappLink } from '../config'
 import SectionHeading from '../components/SectionHeading'
 import { MessageCircle } from 'lucide-react'
@@ -13,6 +14,11 @@ export default function Home() {
   const { data: regions, loading } = useAsync(() => (isConfigured ? listRegions() : Promise.resolve([])), [])
   const { data: counts } = useAsync(
     () => (isConfigured ? getRegionCounts() : Promise.resolve<Record<string, number>>({})),
+    [],
+  )
+
+  const { data: featured } = useAsync(
+    () => (isConfigured ? listPublicListings({ featured: true, limit: 3 }) : Promise.resolve([])),
     [],
   )
 
@@ -96,6 +102,20 @@ export default function Home() {
           })}
         </div>
       </section>
+
+      {featured && featured.length > 0 && (
+        <section className="mx-auto max-w-7xl px-5 pb-16 sm:px-8 sm:pb-20">
+          <SectionHeading title="Imóveis em destaque" />
+          <div className="mt-8 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+            {featured.map((l) => (
+              <ListingCard key={l.id} listing={l} />
+            ))}
+          </div>
+          <Link to="/imoveis" className="eyebrow mt-10 inline-block text-gold hover:text-gold-soft">
+            Ver todos os imóveis →
+          </Link>
+        </section>
+      )}
 
       <section className="mx-auto max-w-7xl px-5 pb-20 sm:px-8 sm:pb-28">
         <div className="grid gap-6 md:grid-cols-2">

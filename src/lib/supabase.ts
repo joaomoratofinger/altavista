@@ -10,3 +10,4 @@ export const supabase = createClient(url ?? 'http://localhost:54321', key ?? 'no
 
 export const BUCKET_PRIVATE = 'property-media'
 export const BUCKET_REGIONS = 'region-media'
+export const BUCKET_LISTINGS = 'listing-media'

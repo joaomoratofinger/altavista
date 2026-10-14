@@ -1,4 +1,4 @@
-import { BUCKET_PRIVATE, BUCKET_REGIONS, supabase } from '../lib/supabase'
+import { BUCKET_LISTINGS, BUCKET_PRIVATE, BUCKET_REGIONS, supabase } from '../lib/supabase'
 import { extensionFor, shrinkImage } from '../lib/images'
 import type {
   AccessLogRow,
@@ -6,6 +6,8 @@ import type {
   BuyerStatus,
   Counters,
   Interaction,
+  Listing,
+  ListingPrivate,
   Owner,
   Property,
   PropertyMedia,
@@ -247,6 +249,70 @@ export async function uploadRegionImage(file: File): Promise<string> {
 
 export async function removeRegionImages(paths: string[]): Promise<void> {
   if (paths.length) await supabase.storage.from(BUCKET_REGIONS).remove(paths)
+}
+
+// ---------------------------------------------------------------------------
+// Imóveis públicos (vitrine do site)
+// ---------------------------------------------------------------------------
+
+export async function listAllListings(): Promise<Listing[]> {
+  return check(await supabase.from('listings').select('*').order('created_at', { ascending: false })) as Listing[]
+}
+
+export async function getListing(id: string): Promise<{ listing: Listing; private: ListingPrivate } | null> {
+  const { data, error } = await supabase.from('listings').select('*').eq('id', id).maybeSingle()
+  if (error) throw error
+  if (!data) return null
+  const { data: priv, error: privError } = await supabase
+    .from('listing_private')
+    .select('owner_name, owner_phone, owner_email, notes')
+    .eq('listing_id', id)
+    .maybeSingle()
+  if (privError) throw privError
+  return {
+    listing: data as Listing,
+    private: (priv as ListingPrivate | null) ?? { owner_name: null, owner_phone: null, owner_email: null, notes: null },
+  }
+}
+
+export type ListingInput = Omit<Listing, 'id' | 'created_at'> & { id?: string }
+
+/** Grava o anúncio e os dados internos dele. Devolve o id. */
+export async function saveListing(listing: ListingInput, priv: ListingPrivate): Promise<string> {
+  const { id, ...fields } = listing
+  let listingId = id
+  if (id) {
+    const { error } = await supabase.from('listings').update(fields).eq('id', id)
+    if (error) throw error
+  } else {
+    const { data, error } = await supabase.from('listings').insert(fields).select('id').single()
+    if (error) throw error
+    listingId = (data as { id: string }).id
+  }
+  const { error } = await supabase.from('listing_private').upsert({ listing_id: listingId, ...priv })
+  if (error) throw error
+  return listingId as string
+}
+
+export async function deleteListing(listing: Listing): Promise<void> {
+  const { error } = await supabase.from('listings').delete().eq('id', listing.id)
+  if (error) throw error
+  await removeListingImages(listing.images.map((i) => i.path)).catch(() => undefined)
+  logAccess('excluir', 'listings', listing.id)
+}
+
+export async function uploadListingImage(file: File): Promise<string> {
+  const blob = await shrinkImage(file)
+  const path = `${Date.now()}-${crypto.randomUUID().slice(0, 8)}.${extensionFor(blob, file)}`
+  const { error } = await supabase.storage
+    .from(BUCKET_LISTINGS)
+    .upload(path, blob, { contentType: blob.type || file.type, cacheControl: '31536000' })
+  if (error) throw error
+  return path
+}
+
+export async function removeListingImages(paths: string[]): Promise<void> {
+  if (paths.length) await supabase.storage.from(BUCKET_LISTINGS).remove(paths)
 }
 
 // ---------------------------------------------------------------------------

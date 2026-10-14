@@ -163,3 +163,43 @@ export interface Counters {
   buyers: Partial<Record<BuyerStatus, number>>
   signups: Array<{ day: string; proprietarios: number; compradores: number }>
 }
+
+// ---------------------------------------------------------------------------
+// Imóveis públicos (vitrine do site)
+// ---------------------------------------------------------------------------
+
+export type ListingStatus = 'disponivel' | 'exclusivo' | 'vendido'
+
+export const LISTING_STATUS_LABELS: Record<ListingStatus, string> = {
+  disponivel: 'Disponível',
+  exclusivo: 'Exclusivo',
+  vendido: 'Vendido',
+}
+
+export interface Listing {
+  id: string
+  slug: string
+  title: string
+  location: string
+  region_id: string | null
+  status: ListingStatus
+  price: number | null
+  built_area_m2: number | null
+  land_area_m2: number | null
+  bedrooms: number | null
+  suites: number | null
+  parking: number | null
+  description: string | null
+  highlights: string[]
+  images: RegionImage[]
+  featured: boolean
+  published: boolean
+  created_at: string
+}
+
+export interface ListingPrivate {
+  owner_name: string | null
+  owner_phone: string | null
+  owner_email: string | null
+  notes: string | null
+}
