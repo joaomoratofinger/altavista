@@ -1,3 +1,4 @@
+import { lazy, Suspense } from 'react'
 import { Navigate, Outlet, Routes, Route } from 'react-router-dom'
 import Layout from './components/Layout'
 import Home from './pages/Home'
@@ -6,24 +7,36 @@ import OwnerForm from './pages/OwnerForm'
 import BuyerForm from './pages/BuyerForm'
 import Thanks from './pages/Thanks'
 import NotFound from './pages/NotFound'
-import PainelLayout from './pages/painel/PainelLayout'
-import Dashboard from './pages/painel/Dashboard'
-import PropertyList from './pages/painel/PropertyList'
-import PropertyReview from './pages/painel/PropertyReview'
-import BuyerList from './pages/painel/BuyerList'
-import BuyerReview from './pages/painel/BuyerReview'
-import BuyerCreate from './pages/painel/BuyerCreate'
-import { ListingFormPage, ListingList } from './pages/painel/ListingAdmin'
 import Imoveis from './pages/Imoveis'
 import ImovelDetail from './pages/ImovelDetail'
 import Entrar from './pages/Entrar'
 import Acervo from './pages/Acervo'
-import { AuthProvider } from './lib/auth'
+import { AuthProvider, useAuth } from './lib/auth'
 import { isConfigured } from './lib/supabase'
-import { RegionFormPage, RegionList } from './pages/painel/RegionAdmin'
-import TermsAdmin from './pages/painel/TermsAdmin'
-import LogAdmin from './pages/painel/LogAdmin'
-import { useAuth } from './lib/auth'
+
+// Painel em arquivos separados: visitante do site não baixa esse código.
+const PainelLayout = lazy(() => import('./pages/painel/PainelLayout'))
+const Dashboard = lazy(() => import('./pages/painel/Dashboard'))
+const PropertyList = lazy(() => import('./pages/painel/PropertyList'))
+const PropertyReview = lazy(() => import('./pages/painel/PropertyReview'))
+const PropertyEdit = lazy(() => import('./pages/painel/PropertyEdit'))
+const BuyerList = lazy(() => import('./pages/painel/BuyerList'))
+const BuyerReview = lazy(() => import('./pages/painel/BuyerReview'))
+const BuyerCreate = lazy(() => import('./pages/painel/BuyerCreate'))
+const ListingList = lazy(() => import('./pages/painel/ListingAdmin').then((m) => ({ default: m.ListingList })))
+const ListingFormPage = lazy(() => import('./pages/painel/ListingAdmin').then((m) => ({ default: m.ListingFormPage })))
+const RegionList = lazy(() => import('./pages/painel/RegionAdmin').then((m) => ({ default: m.RegionList })))
+const RegionFormPage = lazy(() => import('./pages/painel/RegionAdmin').then((m) => ({ default: m.RegionFormPage })))
+const TermsAdmin = lazy(() => import('./pages/painel/TermsAdmin'))
+const LogAdmin = lazy(() => import('./pages/painel/LogAdmin'))
+
+function PainelShell() {
+  return (
+    <Suspense fallback={<p className="p-8 text-sm text-mute">Carregando…</p>}>
+      <PainelLayout />
+    </Suspense>
+  )
+}
 
 /** Rotas só de administrador (regiões, termos, log). Corretor volta ao resumo. */
 function RequireAdmin() {
@@ -58,10 +71,11 @@ export default function App() {
         </Route>
         <Route path="*" element={<NotFound />} />
       </Route>
-      <Route path="painel" element={<PainelLayout />}>
+      <Route path="painel" element={<PainelShell />}>
         <Route index element={<Dashboard />} />
         <Route path="imoveis" element={<PropertyList />} />
         <Route path="imoveis/:id" element={<PropertyReview />} />
+        <Route path="imoveis/:id/editar" element={<PropertyEdit />} />
         <Route path="anuncios" element={<ListingList />} />
         <Route path="anuncios/novo" element={<ListingFormPage />} />
         <Route path="anuncios/:id" element={<ListingFormPage />} />

@@ -1,4 +1,4 @@
-import { useEffect, type ReactNode } from 'react'
+import { Suspense, useEffect, type ReactNode } from 'react'
 import { NavLink, Outlet } from 'react-router-dom'
 import { AuthProvider, useAuth } from '../../lib/auth'
 import { isConfigured } from '../../lib/supabase'
@@ -83,7 +83,9 @@ function Gate() {
         </>
       }
     >
-      <Outlet />
+      <Suspense fallback={<p className="text-sm text-mute">Carregando…</p>}>
+        <Outlet />
+      </Suspense>
     </Shell>
   )
 }

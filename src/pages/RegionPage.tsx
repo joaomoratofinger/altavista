@@ -1,13 +1,19 @@
 import { Link, useParams } from 'react-router-dom'
 import { useAsync } from '../lib/useAsync'
-import { getRegionBySlug, getRegionCounts, regionImageUrl } from '../data/site'
+import { getRegionBySlug, getRegionCounts, listPublicListings, regionImageUrl } from '../data/site'
 import { primaryButton, ghostButton } from '../components/ui'
+import ListingCard from '../components/ListingCard'
+import SectionHeading from '../components/SectionHeading'
 import NotFound from './NotFound'
 
 export default function RegionPage() {
   const { slug = '' } = useParams()
   const { data: region, loading, error } = useAsync(() => getRegionBySlug(slug), [slug])
   const { data: counts } = useAsync(() => getRegionCounts(), [slug])
+  const { data: listings } = useAsync(
+    () => (region ? listPublicListings({ regionId: region.id, limit: 3 }) : Promise.resolve([])),
+    [region?.id],
+  )
 
   if (loading) return <p className="mx-auto max-w-7xl px-5 pt-40 text-sm text-mute sm:px-8">Carregando…</p>
   if (error) {
@@ -46,9 +52,10 @@ export default function RegionPage() {
           <div className="whitespace-pre-line text-base leading-relaxed text-ink/80">{region.body}</div>
 
           <aside className="h-fit space-y-4 rounded-2xl border border-line bg-paper-soft p-6">
-            <p className="eyebrow text-mute">O acervo é reservado</p>
+            <p className="eyebrow text-mute">Acervo reservado</p>
             <p className="text-sm leading-relaxed text-ink/70">
-              Os imóveis desta região não são divulgados publicamente. Cadastre-se para participar.
+              Além dos imóveis anunciados, temos um acervo off market nesta região, apresentado apenas a
+              compradores cadastrados. Cadastre-se para participar.
             </p>
             <Link to={`/comprador?regiao=${region.slug}`} className={`${primaryButton} block`}>
               Quero comprar
@@ -73,6 +80,20 @@ export default function RegionPage() {
           </div>
         )}
       </section>
+
+      {listings && listings.length > 0 && (
+        <section className="mx-auto max-w-7xl px-5 pb-20 sm:px-8">
+          <SectionHeading title={`Imóveis anunciados em ${region.name}`} />
+          <div className="mt-8 grid gap-x-6 gap-y-12 sm:grid-cols-2 lg:grid-cols-3">
+            {listings.map((l) => (
+              <ListingCard key={l.id} listing={l} />
+            ))}
+          </div>
+          <Link to={`/imoveis?regiao=${region.slug}`} className="eyebrow mt-10 inline-block text-gold hover:text-gold-soft">
+            Ver todos os imóveis da região →
+          </Link>
+        </section>
+      )}
     </>
   )
 }

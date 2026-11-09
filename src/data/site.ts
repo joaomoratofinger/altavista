@@ -17,9 +17,12 @@ export function listingImageUrl(path: string): string {
 }
 
 /** Imóveis públicos publicados (vitrine). Mais recentes primeiro. */
-export async function listPublicListings(opts: { featured?: boolean; limit?: number } = {}): Promise<Listing[]> {
+export async function listPublicListings(
+  opts: { featured?: boolean; limit?: number; regionId?: string } = {},
+): Promise<Listing[]> {
   let q = supabase.from('listings').select('*').eq('published', true).order('created_at', { ascending: false })
   if (opts.featured) q = q.eq('featured', true)
+  if (opts.regionId) q = q.eq('region_id', opts.regionId)
   if (opts.limit) q = q.limit(opts.limit)
   const { data, error } = await q
   if (error) throw error

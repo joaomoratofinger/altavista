@@ -78,7 +78,7 @@ export default function Home() {
             return (
               <Link
                 key={r.id}
-                to={`/regiao/${r.slug}`}
+                to={`/imoveis?regiao=${r.slug}`}
                 className="group block w-[72%] shrink-0 snap-start sm:w-[44%] lg:w-auto"
               >
                 <div className="aspect-[4/3] overflow-hidden rounded-2xl bg-card">

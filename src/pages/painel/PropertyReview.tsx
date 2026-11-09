@@ -15,6 +15,7 @@ import { formatArea, formatDate, formatDateTime, formatNumber, formatPhone, form
 import { PROPERTY_STATUS_LABELS, type PropertyStatus } from '../../types/db'
 import { dangerButton, Field, ghostButton, inputClass, Notice, primaryButton, StatusPill } from '../../components/ui'
 import { propertyTone } from './PropertyList'
+import { SITE } from '../../config'
 
 export default function PropertyReview() {
   const { id = '' } = useParams()
@@ -103,6 +104,7 @@ export default function PropertyReview() {
         <div className="mt-3 flex flex-wrap items-center gap-4">
           <h1 className="display text-4xl text-ink">{p.location_detail}</h1>
           <StatusPill tone={propertyTone(p.status)}>{PROPERTY_STATUS_LABELS[p.status]}</StatusPill>
+          <Link to={`/painel/imoveis/${p.id}/editar`} className={ghostButton}>Editar dados</Link>
         </div>
         <p className="mt-2 text-xs text-mute">
           {p.region?.name} · cadastrado em {formatDateTime(p.created_at)}
@@ -175,6 +177,19 @@ export default function PropertyReview() {
       <section className="space-y-4 border-t border-line pt-8">
         <h2 className="display text-2xl text-ink">Decisão</h2>
         {p.review_note && <Notice>Última observação: {p.review_note}</Notice>}
+        {p.review_note && p.owner && (p.status === 'ajuste_solicitado' || p.status === 'recusado') && (
+          <div className="space-y-2">
+            <a
+              className={ghostButton}
+              target="_blank"
+              rel="noreferrer"
+              href={`https://wa.me/${p.owner.whatsapp}?text=${encodeURIComponent(ownerMessage(p.owner.name, p.location_detail, p.review_note, p.status))}`}
+            >
+              Enviar ao proprietário pelo WhatsApp
+            </a>
+            <p className="text-xs text-mute">Abre a conversa com a observação acima já escrita; é só enviar.</p>
+          </div>
+        )}
         {actionError && <Notice tone="error">{actionError}</Notice>}
         <Field label="Observação" hint="Obrigatória para pedir ajuste ou recusar. Fica registrada no cadastro.">
           <textarea className={inputClass} rows={3} value={note} onChange={(e) => setNote(e.target.value)} />
@@ -193,6 +208,11 @@ export default function PropertyReview() {
           {p.status !== 'recusado' && (
             <button type="button" disabled={busy} className={dangerButton} onClick={() => change('recusado', true)}>
               Recusar
+            </button>
+          )}
+          {p.status !== 'em_analise' && (
+            <button type="button" disabled={busy} className={ghostButton} onClick={() => change('em_analise')}>
+              Voltar para análise
             </button>
           )}
           {p.status === 'no_acervo' && (
@@ -240,6 +260,16 @@ export default function PropertyReview() {
       )}
     </div>
   )
+}
+
+function ownerMessage(name: string, location: string, note: string, status: PropertyStatus): string {
+  const first = name.split(' ')[0]
+  const intro =
+    status === 'recusado'
+      ? `Olá, ${first}! Sobre o cadastro do seu imóvel (${location}) no ${SITE.name}, não conseguiremos seguir por ora:`
+      : `Olá, ${first}! Analisamos o cadastro do seu imóvel (${location}) no ${SITE.name} e precisamos de um ajuste:`
+  const outro = status === 'recusado' ? '' : '\n\nPode nos responder por aqui com a informação correta? Assim que recebermos, damos andamento.'
+  return `${intro}\n\n${note}${outro}`
 }
 
 function Info({ label, value, wide }: { label: string; value: ReactNode; wide?: boolean }) {

@@ -78,6 +78,19 @@ export async function setPropertyStatus(id: string, status: PropertyStatus, note
   if (error) throw error
 }
 
+export type PropertyDetails = Pick<
+  Property,
+  | 'region_id' | 'location_detail' | 'land_area_m2' | 'built_area_m2' | 'asking_price'
+  | 'bedrooms' | 'suites' | 'parking' | 'highlights' | 'accepts_buyer_contact'
+>
+
+/** Correção de dados do imóvel pela equipe (não mexe no status). */
+export async function updatePropertyDetails(id: string, details: PropertyDetails): Promise<void> {
+  const { error } = await supabase.from('properties').update(details).eq('id', id)
+  if (error) throw error
+  logAccess('editar', 'properties', id)
+}
+
 /** Links temporários (1 h) para as fotos do bucket privado. */
 export async function signedMediaUrls(paths: string[], seconds = 3600): Promise<Record<string, string>> {
   if (paths.length === 0) return {}
